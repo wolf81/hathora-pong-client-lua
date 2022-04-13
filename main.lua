@@ -4,6 +4,8 @@ local Base = require "api.base"
 local Point = types.Point
 local Player = types.Player
 local PlayerState = types.PlayerState
+local Direction = types.Direction
+local SetDirectionRequest = types.SetDirectionRequest
 
 local EPSILON = 0.01
 
@@ -91,6 +93,12 @@ local function testPlayerStateDiff(p)
 	testPlayerStateEqual(p, dec)
 end
 
+local function testDirectionRequest(r)
+	local enc = SetDirectionRequest.encode(r)
+	local dec = SetDirectionRequest.decode(enc.dataView())
+	assert(r.direction == dec.direction, "directions not equal")
+end
+
 function love.load(args)
 	local point = Point(0.345, 0.678)
 	testPoint(point)
@@ -110,4 +118,7 @@ function love.load(args)
 	testPlayerState(playerState)
 
 	testPlayerStateDiff(PlayerState(NO_DIFF, playerA, point))
+
+	testDirectionRequest(SetDirectionRequest(Direction.UP))
+
 end

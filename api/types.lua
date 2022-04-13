@@ -27,12 +27,20 @@ local function writeInt(buf, x)
 	buf.writeVarint(x)
 end
 
+local function writeUInt8(buf, x)
+	buf.writeUInt8(x)
+end
+
 local function parseFloat(buf)
 	return buf.readFloat()
 end
 
 local function parseInt(buf)
-	return buf.readVarint(x)
+	return buf.readVarint()
+end
+
+local function parseUInt8(buf)
+	return buf.readUInt8()
 end
 
 local Direction = {
@@ -147,7 +155,7 @@ setmetatable(Player, {
 	__call = Player.new,
 })
 
--- PLAYER_STATE
+-- PLAYER STATE
 
 local PlayerState = {}
 PlayerState.__index = PlayerState
@@ -210,7 +218,35 @@ setmetatable(PlayerState, {
 	__call = PlayerState.new,
 })
 
--- USERID
+-- SET DIRECTION REQUEST
+
+local SetDirectionRequest = {}
+SetDirectionRequest.__index = SetDirectionRequest
+
+function SetDirectionRequest:new(direction)
+	return setmetatable({
+		direction = direction or 0, -- Direction.NONE
+	}, SetDirectionRequest)
+end
+
+function SetDirectionRequest.encode(obj, writer)
+	local buf = writer or Writer()
+	writeUInt8(buf, obj.direction)
+	return buf
+end
+
+function SetDirectionRequest.decode(buf)
+	local sb = isView(buf) and Reader(buf) or buf
+	return SetDirectionRequest(
+		parseUInt8(sb)
+	)
+end
+
+setmetatable(SetDirectionRequest, {
+	__call = SetDirectionRequest.new,
+})
+
+-- USER ID
 
 local UserID = ""
 
@@ -221,5 +257,6 @@ return {
 	Point = Point,
 	Player = Player,
 	PlayerState = PlayerState,
+	SetDirectionRequest = SetDirectionRequest,
 	UserID = UserID,
 }
