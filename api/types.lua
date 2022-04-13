@@ -15,6 +15,23 @@ local function push(tbl, val)
 	tbl[#tbl + 1] = val
 end
 
+local function flatMap(arr, fn)
+	local results = {}
+
+	for _, val in ipairs(arr) do
+		local r = fn(val)
+		if type(r) == "table" then
+			for _, ri in ipairs(r) do
+				results[#results + 1] = ri
+			end
+		else
+			results[#results + 1] = r
+		end
+	end
+
+	return results
+end
+
 local function shift(tbl)
 	return table.remove(tbl, 1)
 end
@@ -29,6 +46,17 @@ end
 
 local function writeUInt8(buf, x)
 	buf.writeUInt8(x)
+end
+
+local function writeBoolean(buf, x)
+	buf.writeUInt8(x and 1 or 0)
+end
+
+local function writeOptional(buf, x, innerWrite)
+	writeBoolean(buf, x ~= nil)
+	if x ~= nil then
+		innerWrite(x)
+	end
 end
 
 local function parseFloat(buf)
@@ -285,6 +313,37 @@ local function encodeStateSnapshot(x)
 	return result.toBuffer()	
 end
 
+-- STATE UPDATE
+
+local function encodeStateUpdate(x, changedAtDiff, messages)
+	local buf = Writer()
+	buf.writeUInt8(1)
+	buf.writeUVarint(changedAtDiff)
+	local responses = flatMap(messages, function(msg)
+		return msg.type == "response" and msg or {}
+	end)
+	buf.writeUVarint(#responses)
+	for msgId, response in ipairs(responses) do
+		buf.writeUInt32(tonumber(msgId)) 
+		writeOptional(
+			buf, 
+			response.type == "error" and response.error or nil, 
+			function(x) writeString(buf, x) end
+		)
+	end
+	local events = flatMap(messages, function(msg)
+		return msg.type == "event" and msg or {}
+	end)
+	buf.writeUVarint(#events)
+	for _, event in ipairs(events) do
+		buf.writeString(event)
+	end
+	if x ~= nil then
+		PlayerState.encodeDiff(x, buf)
+	end
+	return buf.toBuffer()
+end
+
 -- USER ID
 
 local UserID = ""
@@ -301,4 +360,5 @@ return {
 	UserID = UserID,
 
 	encodeStateSnapshot = encodeStateSnapshot,
+	encodeStateUpdate = encodeStateUpdate,
 }

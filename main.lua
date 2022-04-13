@@ -8,6 +8,7 @@ local Direction = types.Direction
 local SetDirectionRequest = types.SetDirectionRequest
 local InitializeRequest = types.InitializeRequest
 local encodeStateSnapshot = types.encodeStateSnapshot
+local encodeStateUpdate = types.encodeStateUpdate
 
 local EPSILON = 0.01
 
@@ -101,6 +102,10 @@ local function testDirectionRequest(r)
 	assert(r.direction == dec.direction, "directions not equal")
 end
 
+local function testStateUpdate(p, messages)
+	-- body
+end
+
 function love.load(args)
 	local point = Point(0.345, 0.678)
 	testPoint(point)
@@ -120,8 +125,9 @@ function love.load(args)
 	testPlayerState(playerState)
 
 	local buf = encodeStateSnapshot(playerState)
-
 	testPlayerStateDiff(PlayerState(NO_DIFF, playerA, point))
 
 	testDirectionRequest(SetDirectionRequest(Direction.UP))
+
+	testStateUpdate(playerState, 4, {})
 end
