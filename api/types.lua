@@ -267,6 +267,24 @@ setmetatable(InitializeRequest, {
 	__call = InitializeRequest.new,
 })
 
+-- STATE SNAPSHOT
+
+local function encodeStateSnapshot(x)
+	local buf = Writer()
+	buf.writeUInt8(0)
+
+	local status, result = pcall(function()
+		return PlayerState.encode(x, buf)
+	end)
+
+	if not status then
+		print("Invalid user state", x)
+		error(result)
+	end
+
+	return result.toBuffer()	
+end
+
 -- USER ID
 
 local UserID = ""
@@ -281,4 +299,6 @@ return {
 	SetDirectionRequest = SetDirectionRequest,
 	InitializeRequest = InitializeRequest,
 	UserID = UserID,
+
+	encodeStateSnapshot = encodeStateSnapshot,
 }

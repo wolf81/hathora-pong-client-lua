@@ -7,6 +7,7 @@ local PlayerState = types.PlayerState
 local Direction = types.Direction
 local SetDirectionRequest = types.SetDirectionRequest
 local InitializeRequest = types.InitializeRequest
+local encodeStateSnapshot = types.encodeStateSnapshot
 
 local EPSILON = 0.01
 
@@ -117,6 +118,8 @@ function love.load(args)
 
 	local playerState = PlayerState(playerA, playerB, point)
 	testPlayerState(playerState)
+
+	local buf = encodeStateSnapshot(playerState)
 
 	testPlayerStateDiff(PlayerState(NO_DIFF, playerA, point))
 
