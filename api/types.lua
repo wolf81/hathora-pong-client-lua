@@ -16,7 +16,7 @@ local function push(tbl, val)
 end
 
 local function shift(tbl)
-	return table.remove(1)
+	return table.remove(tbl, 1)
 end
 
 local function writeFloat(buf, x)
@@ -63,8 +63,8 @@ end
 function Point.encodeDiff(obj, writer)
 	local buf = writer or Writer()
 	local tracker = {}
-	push(tracker, obj.x ~= NO_DIFF)
-	push(tracker, obj.y ~= NO_DIFF)
+	push(tracker, obj.x ~= NO_DIFF and 1 or 0)
+	push(tracker, obj.y ~= NO_DIFF and 1 or 0)
 	buf.writeBits(tracker)
 	if obj.x ~= NO_DIFF then writeFloat(buf, obj.x) end
 	if obj.y ~= NO_DIFF then writeFloat(buf, obj.y) end
@@ -82,9 +82,10 @@ end
 function Point.decodeDiff(buf)
 	local sb = isView(buf) and Reader(buf) or buf	
 	local tracker = sb.readBits(2)	
+	print(tracker[1], tracker[2])
 	return Point(
-		shift(tracker) and parseFloat(sb) or NO_DIFF,
-		shift(tracker) and parseFloat(sb) or NO_DIFF
+		shift(tracker) == 1 and parseFloat(sb) or NO_DIFF,
+		shift(tracker) == 1 and parseFloat(sb) or NO_DIFF
 	)
 end
 

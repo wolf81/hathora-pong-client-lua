@@ -1,4 +1,6 @@
 local types = require "api.types"
+local Base = require "api.base"
+
 local Point = types.Point
 local Player = types.Player
 local PlayerState = types.PlayerState
@@ -13,6 +15,26 @@ local function testPoint(p)
 	local enc = Point.encode(p)
 	local dec = Point.decode(enc.dataView())
 	assert(eq(dec.x, p.x) and eq(dec.y, p.y), "points not equal")
+end
+
+local function testPointDiff(p)
+	local enc = Point.encodeDiff(p)
+	local dec = Point.decodeDiff(enc.dataView())
+
+	print(p.x, p.y)
+	print(dec.x, dec.y)
+
+	if type(p.x) == "table" then
+		assert(p.x == dec.x)
+	else
+		assert(eq(p.x, dec.x))
+	end
+
+	if type(p.y) == "table" then
+		assert(p.y == dec.y)
+	else
+		assert(eq(p.y, dec.y))
+	end
 end
 
 local function testPlayer(p)
@@ -35,6 +57,9 @@ end
 function love.load(args)
 	local point = Point(0.345, 0.678)
 	testPoint(point)
+
+	testPointDiff(Point(Base.NO_DIFF, Base.NO_DIFF))
+	testPointDiff(Point(Base.NO_DIFF, 0.5))
 
 	local playerA = Player(0.555, 1)
 	testPlayer(playerA)
