@@ -63,8 +63,8 @@ end
 function Point.encodeDiff(obj, writer)
 	local buf = writer or Writer()
 	local tracker = {}
-	push(tracker, obj.x ~= NO_DIFF and 1 or 0)
-	push(tracker, obj.y ~= NO_DIFF and 1 or 0)
+	push(tracker, obj.x ~= NO_DIFF)
+	push(tracker, obj.y ~= NO_DIFF)
 	buf.writeBits(tracker)
 	if obj.x ~= NO_DIFF then writeFloat(buf, obj.x) end
 	if obj.y ~= NO_DIFF then writeFloat(buf, obj.y) end
@@ -82,10 +82,9 @@ end
 function Point.decodeDiff(buf)
 	local sb = isView(buf) and Reader(buf) or buf	
 	local tracker = sb.readBits(2)	
-	print(tracker[1], tracker[2])
 	return Point(
-		shift(tracker) == 1 and parseFloat(sb) or NO_DIFF,
-		shift(tracker) == 1 and parseFloat(sb) or NO_DIFF
+		shift(tracker) and parseFloat(sb) or NO_DIFF,
+		shift(tracker) and parseFloat(sb) or NO_DIFF
 	)
 end
 
@@ -112,11 +111,35 @@ function Player.encode(obj, writer)
 	return buf
 end
 
+function Player.encodeDiff(obj, writer)
+	local buf = writer or Writer()
+	local tracker = {}
+	push(tracker, obj.paddle ~= NO_DIFF)
+	push(tracker, obj.score ~= NO_DIFF)
+	buf.writeBits(tracker)
+	if obj.paddle ~= NO_DIFF then
+		writeFloat(buf, obj.paddle)
+	end
+	if obj.score ~= NO_DIFF then
+		writeInt(buf, obj.score)
+	end
+	return buf
+end
+
 function Player.decode(buf)
 	local sb = isView(buf) and Reader(buf) or buf
 	return Player(
 		parseFloat(sb),
 		parseInt(sb)
+	)
+end
+
+function Player.decodeDiff(buf)
+	local sb = isView(buf) and Reader(buf) or buf
+	local tracker = sb.readBits(2)
+	return Player(
+		shift(tracker) and parseFloat(sb) or NO_DIFF,
+		shift(tracker) and parseInt(sb) or NO_DIFF
 	)
 end
 
@@ -158,6 +181,10 @@ setmetatable(PlayerState, {
 	__call = PlayerState.new,
 })
 
+-- USERID
+
+local UserID = ""
+
 -- MODULE
 
 return {
@@ -165,4 +192,5 @@ return {
 	Point = Point,
 	Player = Player,
 	PlayerState = PlayerState,
+	UserID = UserID,
 }
