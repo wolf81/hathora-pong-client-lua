@@ -175,15 +175,12 @@ function PlayerState.encodeDiff(obj, writers)
 	push(tracker, obj.playerB ~= NO_DIFF)
 	push(tracker, obj.ball ~= NO_DIFF)
 	buf.writeBits(tracker)
-	print(buf.dataView().toHex())
 	if obj.playerA ~= NO_DIFF then
 		Player.encodeDiff(obj.playerA, buf)
 	end
-	print(buf.dataView().toHex())
 	if obj.playerB ~= NO_DIFF then
 		Player.encodeDiff(obj.playerB, buf)
 	end
-	print(buf.dataView().toHex())
 	if obj.ball ~= NO_DIFF then
 		Point.encodeDiff(obj.ball, buf)
 	end
