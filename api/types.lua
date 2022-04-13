@@ -168,12 +168,44 @@ function PlayerState.encode(obj, writer)
 	return buf
 end
 
+function PlayerState.encodeDiff(obj, writers)
+	local buf = writer or Writer()
+	local tracker = {}
+	push(tracker, obj.playerA ~= NO_DIFF)
+	push(tracker, obj.playerB ~= NO_DIFF)
+	push(tracker, obj.ball ~= NO_DIFF)
+	buf.writeBits(tracker)
+	print(buf.dataView().toHex())
+	if obj.playerA ~= NO_DIFF then
+		Player.encodeDiff(obj.playerA, buf)
+	end
+	print(buf.dataView().toHex())
+	if obj.playerB ~= NO_DIFF then
+		Player.encodeDiff(obj.playerB, buf)
+	end
+	print(buf.dataView().toHex())
+	if obj.ball ~= NO_DIFF then
+		Point.encodeDiff(obj.ball, buf)
+	end
+	return buf
+end
+
 function PlayerState.decode(buf)
 	local sb = isView(buf) and Reader(buf) or buf
 	return PlayerState(
 		Player.decode(sb),
 		Player.decode(sb),
 		Point.decode(sb)
+	)
+end
+
+function PlayerState.decodeDiff(buf)
+	local sb = isView(buf) and Reader(buf) or buf
+	local tracker = sb.readBits(3)
+	return PlayerState(
+		shift(tracker) and Player.decodeDiff(sb) or NO_DIFF,
+		shift(tracker) and Player.decodeDiff(sb) or NO_DIFF,
+		shift(tracker) and Point.decodeDiff(sb) or NO_DIFF
 	)
 end
 

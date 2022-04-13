@@ -11,6 +11,14 @@ local function eq(x, y)
 	return math.abs(x - y) < EPSILON
 end
 
+local function testScoreEqual(x, y)
+	if type(x) ~= type(y) then
+		assert(false, "unequal types")
+	else
+		assert(x == y)
+	end
+end
+
 local function testPointsEqual(p1, p2)
 	if type(p1.x) ~= type(p2.x) then
 		assert(false, "unequal types")
@@ -38,11 +46,13 @@ local function testPlayersEqual(p1, p2)
 		assert(eq(p1.paddle, p2.paddle))
 	end
 
-	if type(p1.score) ~= type(p2.score) then
-		assert(false, "unequal types")
-	else
-		assert(p1.score == p2.score)
-	end
+	testScoreEqual(p1.score, p2.score)
+end
+
+local function testPlayerStateEqual(p1, p2)
+	testPlayersEqual(p1.playerA, p2.playerA)
+	testPlayersEqual(p1.playerB, p2.playerB)
+	testScoreEqual(p1.score, p2.score)
 end
 
 local function testPoint(p)
@@ -60,6 +70,7 @@ end
 local function testPlayerDiff(p)
 	local enc = Player.encodeDiff(p)
 	local dec = Player.decodeDiff(enc.dataView())
+	testPlayersEqual(p, dec)
 end
 
 local function testPlayer(p)
@@ -71,11 +82,13 @@ end
 local function testPlayerState(p)
 	local enc = PlayerState.encode(p)
 	local dec = PlayerState.decode(enc.dataView())
+	testPlayerStateEqual(p, dec)
+end
 
-	assert(eq(dec.playerA.paddle, p.playerA.paddle), "playerA paddle not equal")
-	assert(eq(dec.playerB.paddle, p.playerB.paddle), "playerB paddle not equal")
-	assert(dec.playerA.score == p.playerA.score, "player A score not equal")
-	assert(dec.playerB.score == p.playerB.score, "player B score not equal")
+local function testPlayerStateDiff(p)
+	local enc = PlayerState.encodeDiff(p)
+	local dec = PlayerState.decodeDiff(enc.dataView())
+	testPlayerStateEqual(p, dec)
 end
 
 function love.load(args)
@@ -95,4 +108,6 @@ function love.load(args)
 
 	local playerState = PlayerState(playerA, playerB, point)
 	testPlayerState(playerState)
+
+	testPlayerStateDiff(PlayerState(NO_DIFF, playerA, point))
 end
