@@ -5,6 +5,12 @@ Base.NO_DIFF = {}
 
 local DeepPartial = {} -- T: string | number | boolean | undefined
 
+-- local OkResponse = { type = "ok" }
+-- local ErrorResponse = { type = "error", error = "" }
+-- local Response = function(type, arg)
+-- 	if type == "ok" then return OkResponse() end
+-- 	if type == "error" then return ErrorResponse(arg)
+-- end
 return Base
 
 

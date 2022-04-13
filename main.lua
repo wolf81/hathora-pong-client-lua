@@ -1,6 +1,8 @@
 local types = require "api.types"
 local Base = require "api.base"
 
+local serde = require "api.lib.bin-serde"
+
 local Point = types.Point
 local Player = types.Player
 local PlayerState = types.PlayerState
@@ -130,4 +132,13 @@ function love.load(args)
 	testDirectionRequest(SetDirectionRequest(Direction.UP))
 
 	testStateUpdate(playerState, 4, {})
+
+	local playerState = PlayerState(
+		Player(201.1, 72), 
+		Player(46.78, 74), 
+		Point(344.7, 255.9)
+	)
+	local p = PlayerState.encode(playerState)
+	local r = serde.Reader(p.dataView())
+	print(p.dataView().toHex())
 end
