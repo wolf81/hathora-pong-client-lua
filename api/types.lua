@@ -246,6 +246,27 @@ setmetatable(SetDirectionRequest, {
 	__call = SetDirectionRequest.new,
 })
 
+-- INITIALIZE REQUEST
+
+local InitializeRequest = {}
+InitializeRequest.__index = InitializeRequest
+
+function InitializeRequest:new()
+	return setmetatable({}, InitializeRequest)
+end
+
+function InitializeRequest.encode(x, buf)
+	return buf or Writer()
+end
+
+function InitializeRequest.decode(buf)
+	return InitializeRequest()
+end
+
+setmetatable(InitializeRequest, {
+	__call = InitializeRequest.new,
+})
+
 -- USER ID
 
 local UserID = ""
@@ -258,5 +279,6 @@ return {
 	Player = Player,
 	PlayerState = PlayerState,
 	SetDirectionRequest = SetDirectionRequest,
+	InitializeRequest = InitializeRequest,
 	UserID = UserID,
 }
