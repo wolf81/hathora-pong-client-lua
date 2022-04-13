@@ -4,14 +4,19 @@ local serde = require(_PATH .. "lib.bin-serde")
 local Writer = serde.Writer
 local Reader = serde.Reader
 
+local Base = require(_PATH .. "base")
+local NO_DIFF = Base.NO_DIFF
+
 local function isView(buf)
-	--[[
-	-- TODO: 
-	-- ensure this function does the same as in TypeScript:
-	-- const sb = ArrayBuffer.isView(buf) ? new _Reader(buf) : buf;
-	--]]
-	return 
-		getmetatable(buf) == serde.DataView
+	return getmetatable(buf) == serde.DataView
+end
+
+local function push(tbl, val)
+	tbl[#tbl + 1] = val
+end
+
+local function shift(tbl)
+	return table.remove(1)
 end
 
 local function writeFloat(buf, x)
@@ -55,11 +60,31 @@ function Point.encode(obj, writer)
 	return buf
 end
 
+function Point.encodeDiff(obj, writer)
+	local buf = writer or Writer()
+	local tracker = {}
+	push(tracker, obj.x ~= NO_DIFF)
+	push(tracker, obj.y ~= NO_DIFF)
+	buf.writeBits(tracker)
+	if obj.x ~= NO_DIFF then writeFloat(buf, obj.x) end
+	if obj.y ~= NO_DIFF then writeFloat(buf, obj.y) end
+	return buf
+end
+
 function Point.decode(buf)
 	local sb = isView(buf) and Reader(buf) or buf
 	return Point(
 		parseFloat(sb), 
 		parseFloat(sb)
+	)
+end
+
+function Point.decodeDiff(buf)
+	local sb = isView(buf) and Reader(buf) or buf	
+	local tracker = sb.readBits(2)	
+	return Point(
+		shift(tracker) and parseFloat(sb) or NO_DIFF,
+		shift(tracker) and parseFloat(sb) or NO_DIFF
 	)
 end
 
