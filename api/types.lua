@@ -70,6 +70,20 @@ local function writeArray(buf, x, innerWrite)
 	end
 end
 
+local function writeArrayDiff(buf, x, innerWrite)
+	buf.writeUVarint(#x)
+	local tracker = {}
+	for _, val in ipairs(x) do
+		push(tracker, x ~= NO_DIFF)
+	end
+	buf.writeBits(tracker)
+	for _, val in ipairs(x) do
+		if val ~= NO_DIFF then
+			innerWrite(val)
+		end
+	end
+end
+
 local function parseUInt8(buf)
 	return buf.readUInt8()
 end
@@ -92,6 +106,29 @@ end
 
 local function parseOptional(buf, innerParse)
 	return parseBoolean(buf) and innerParse(buf) or nil
+end
+
+local function parseArray(buf, innerParse)
+	local len = buf.readUVarInt()
+	local arr = {}
+	for i = 1, len do
+		push(arr, innerParse())
+	end
+	return arr
+end
+
+local function parseArrayDiff(buf, innerParse)
+	local len = buf.readUVarInt()
+	local tracker = buf.readBits(len)
+	local arr = {}
+	for i = 1, len do
+		if shift(tracker) then
+			push(arr, innerParse())
+		else
+			push(arr, NO_DIFF)
+		end
+	end
+	return arr
 end
 
 local Direction = {
