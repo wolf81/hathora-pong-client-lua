@@ -134,16 +134,16 @@ function love.load(args)
 	testStateUpdate(playerState, 4, {})
 
 	local playerState = PlayerState(
-		Player(201.1, 72), 
-		Player(46.78, 74), 
+		Player(201.1, 16383), 
+		Player(46.78, 16384), 
 		Point(344.7, 255.9)
 	)
 	local p = PlayerState.encode(playerState)
-	-- local r = serde.Reader(p.dataView())
+	local r = serde.Reader(p.dataView())
 
-	-- while true do
-	-- 	local i = r.readUInt8()
-	-- 	print(i)		
-	-- end
+	while true do
+		local i = r.readUInt8()
+		print(i)		
+	end
 	print(p.dataView().toHex())
 end

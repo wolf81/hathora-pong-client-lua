@@ -6,9 +6,11 @@ Base.NO_DIFF = {}
 local function OkResponse() 
 	return { type = "ok" } 
 end
+
 local function ErrorResponse(error) 
 	return { type = "error", error = error } 
 end
+
 local Response = {
 	ok = function() 
 		return OkResponse() 
@@ -17,9 +19,6 @@ local Response = {
 		return ErrorResponse(error) 
 	end,
 }
-
-print(Response.ok().type)
-print(Response.error("blaat").error)
 
 local function ResponseMessage(msgId, response)
 	return { 
