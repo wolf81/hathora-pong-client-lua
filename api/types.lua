@@ -36,20 +36,24 @@ local function shift(tbl)
 	return table.remove(tbl, 1)
 end
 
-local function writeFloat(buf, x)
-	buf.writeFloat(x)
-end
-
-local function writeInt(buf, x)
-	buf.writeVarint(x)
-end
-
 local function writeUInt8(buf, x)
 	buf.writeUInt8(x)
 end
 
 local function writeBoolean(buf, x)
 	buf.writeUInt8(x and 1 or 0)
+end
+
+local function writeInt(buf, x)
+	buf.writeVarint(x)
+end
+
+local function writeFloat(buf, x)
+	buf.writeFloat(x)
+end
+
+local function writeString(buf, x)
+	buf.writeString(x)
 end
 
 local function writeOptional(buf, x, innerWrite)
@@ -59,16 +63,35 @@ local function writeOptional(buf, x, innerWrite)
 	end
 end
 
-local function parseFloat(buf)
-	return buf.readFloat()
+local function writeArray(buf, x, innerWrite)
+	buf.writeUVarint(#x)
+	for _, ix in ipairs(x) do
+		innerWrite(ix)
+	end
+end
+
+local function parseUInt8(buf)
+	return buf.readUInt8()
+end
+
+local function parseBoolean(buf)
+	return buf.readUInt8() > 0
 end
 
 local function parseInt(buf)
 	return buf.readVarint()
 end
 
-local function parseUInt8(buf)
-	return buf.readUInt8()
+local function parseFloat(buf)
+	return buf.readFloat()
+end
+
+local function parseString(buf)
+	return buf.readString()
+end
+
+local function parseOptional(buf, innerParse)
+	return parseBoolean(buf) and innerParse(buf) or nil
 end
 
 local Direction = {
@@ -342,6 +365,22 @@ local function encodeStateUpdate(x, changedAtDiff, messages)
 		PlayerState.encodeDiff(x, buf)
 	end
 	return buf.toBuffer()
+end
+
+--[[
+result:
+{
+  stateDiff?: _DeepPartial<PlayerState>;
+  changedAtDiff: number;
+  responses: _ResponseMessage[];
+  events: _EventMessage[];
+}
+--]]
+
+local function decodeStateUpdate(buf)
+	local sb = isView(buf) and Reader(buf) or buf
+	local changedAtDiff = sb.readUVarInt()
+	local responses = sb.readUVarInt()
 end
 
 -- USER ID
