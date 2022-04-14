@@ -134,8 +134,8 @@ function love.load(args)
 	testStateUpdate(playerState, 4, {})
 
 	local playerState = PlayerState(
-		Player(201.1, 16383), 
-		Player(46.78, 16384), 
+		Player(201.1, 2097151), 
+		Player(46.78, 2097152), 
 		Point(344.7, 255.9)
 	)
 	local p = PlayerState.encode(playerState)
