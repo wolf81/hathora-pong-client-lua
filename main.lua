@@ -141,9 +141,11 @@ function love.load(args)
 	local p = PlayerState.encode(playerState)
 	local r = serde.Reader(p.dataView())
 
-	while true do
-		local i = r.readUInt8()
-		print(i)		
-	end
-	print(p.dataView().toHex())
+	local bytes = {}
+	p.dataView().eachByte(function(b)
+		bytes[#bytes + 1] = string.byte(b)
+	end)
+	print(table.concat(bytes, ", "))
+
+	print("\n", p.dataView().toHex())
 end
