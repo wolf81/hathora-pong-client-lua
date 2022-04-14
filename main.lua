@@ -139,11 +139,11 @@ function love.load(args)
 		Point(344.7, 255.9)
 	)
 	local p = PlayerState.encode(playerState)
-	local r = serde.Reader(p.dataView())
+	-- local r = serde.Reader(p.dataView())
 
-	while true do
-		local i = r.readUInt8()
-		print(i)		
-	end
+	-- while true do
+	-- 	local i = r.readUInt8()
+	-- 	print(i)		
+	-- end
 	print(p.dataView().toHex())
 end

@@ -3,14 +3,45 @@ local Base = {}
 Base.COORDINATOR_HOST = "coordinator.hathora.dev"
 Base.NO_DIFF = {}
 
-local DeepPartial = {} -- T: string | number | boolean | undefined
+local function OkResponse() 
+	return { type = "ok" } 
+end
+local function ErrorResponse(error) 
+	return { type = "error", error = error } 
+end
+local Response = {
+	ok = function() 
+		return OkResponse() 
+	end,
+	error = function(error) 
+		return ErrorResponse(error) 
+	end,
+}
 
--- local OkResponse = { type = "ok" }
--- local ErrorResponse = { type = "error", error = "" }
--- local Response = function(type, arg)
--- 	if type == "ok" then return OkResponse() end
--- 	if type == "error" then return ErrorResponse(arg)
--- end
+print(Response.ok().type)
+print(Response.error("blaat").error)
+
+local function ResponseMessage(msgId, response)
+	return { 
+		type = "response", 
+		msgId = msgId, 
+		response = response, 
+	}
+end
+
+local function EventMessage(event)
+	return { type = "event", event = event }
+end
+
+local Message = {
+	response = function(msgId, response) 
+		return ResponseMessage(msgId, response) 
+	end,
+	event = function(event)
+		return EventMessage(event)
+	end,
+}
+
 return Base
 
 
