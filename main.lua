@@ -143,7 +143,7 @@ function love.load(args)
 
 	local bytes = {}
 	p.dataView().eachByte(function(b)
-		bytes[#bytes + 1] = string.byte(b)
+		bytes[#bytes + 1] = b
 	end)
 	print(table.concat(bytes, ", "))
 
