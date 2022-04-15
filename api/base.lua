@@ -1,12 +1,16 @@
 local COORDINATOR_HOST = "coordinator.hathora.dev"
 local NO_DIFF = {}
 
+local Method = {
+	SET_DIRECTION = 0,
+}
+
 local function OkResponse() 
-	return { type = "ok" } 
+	return { type = "ok", } 
 end
 
 local function ErrorResponse(error) 
-	return { type = "error", error = error } 
+	return { type = "error", error = error, } 
 end
 
 local Response = {
@@ -27,7 +31,10 @@ local function ResponseMessage(msgId, response)
 end
 
 local function EventMessage(event)
-	return { type = "event", event = event, }
+	return { 
+		type = "event", 
+		event = event, 
+	}
 end
 
 local Message = {
@@ -39,6 +46,26 @@ local Message = {
 	end,
 }
 
+-- TODO: an interface in TypeScript code, should we use a different approach here?
+local AnonymousUserData = {
+	type = "anonymous",
+	id = "",
+	name = "",
+}
+-- TODO: a class should implement the interface, not just refer to interface
+local UserData = AnonymousUserData 
+
+local function lookupUser(userId, fn) 
+	  -- return axios.get<UserData>(`https://${COORDINATOR_HOST}/users/${userId}`).then((res) => res.data);
+	return fn()
+end
+
+local function getUserDisplayName(user)
+	if user.type == "anonymous" then return user.name end
+
+	return nil
+end
+
 return {
 	COORDINATOR_HOST = COORDINATOR_HOST,
 	NO_DIFF = NO_DIFF,
@@ -46,9 +73,14 @@ return {
 	OkResponse = OkResponse,
 	ErrorResponse = ErrorResponse,
 	Response = Response,
+
 	ResponseMessage = ResponseMessage,
 	EventMessage = EventMessage,
 	Message = Message,
+
+	AnonymousUserData = AnonymousUserData,
+	lookupUser = lookupUser,
+	getUserDisplayName = getUserDisplayName,
 }
 
 

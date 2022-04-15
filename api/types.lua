@@ -390,6 +390,11 @@ local function encodeStateSnapshot(x)
 	return result.toBuffer()	
 end
 
+local function decodeStateSnapshot(buf)
+	local sb = isView(buf) and Reader(buf) or buf
+	return PlayerState.decode(sb)
+end
+
 -- STATE UPDATE
 
 local function encodeStateUpdate(x, changedAtDiff, messages)
@@ -480,6 +485,8 @@ return {
 	InitializeRequest = InitializeRequest,
 
 	encodeStateSnapshot = encodeStateSnapshot,
+	decodeStateSnapshot = decodeStateSnapshot,
+	
 	encodeStateUpdate = encodeStateUpdate,
 	decodeStateUpdate = decodeStateUpdate,
 
