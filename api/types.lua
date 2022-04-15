@@ -438,16 +438,14 @@ result:
 local function decodeStateUpdate(buf)
 	local sb = isView(buf) and Reader(buf) or buf
 	
+	-- TODO: remove this (value: 0) as when we have a 0 value, we know we need 
+	-- to decode the state update
 	sb.readUVarint()
 
 	local changedAtDiff = sb.readUVarint()
 
-	print("changedAtDiff", changedAtDiff)
-
 	local responseCount = sb.readUVarint()
-	print("decode #responses", responseCount)
 	local responses = {}
-
 	for i = 1, responseCount do
 		local msgId = sb.readUInt32()
 		local maybeError = parseOptional(sb, function()
@@ -456,18 +454,14 @@ local function decodeStateUpdate(buf)
 		responses[#responses + 1] = Message.response(msgId, maybeError == nil, Response.ok(), Response.error(maybeError))		
 	end
 
-	for _, resp in ipairs(responses) do
-		print()
-		for k,v in pairs(resp) do
-			print(k, v)
-		end
+	local eventCount = sb.readUVarint()
+	local events = {}
+	for i = 1, eventCount do
+		events[#events + 1] = Message.event(sb.readString())
 	end
 
-	-- local responses = map({ sb.readUVarint() }, function()
-	-- end)
-
-	-- print("R", #responses)
-	-- spread({ sb.readUVarint() })
+	local stateDiff = sb.remaining() > 0 and PlayerState.decodeDiff(sb) or nil
+	return stateDiff, changedAtDiff, responses, events
 end
 
 -- USER ID

@@ -108,9 +108,7 @@ end
 
 local function testStateUpdate(p, messages)
 	local ok = Base.Response.ok()
-	print("->", ok.type)
 	local err = Base.Response.error("An error occurred")
-	print("->", err.type)
 
 	local response1 = Base.Message.response(1010, ok)
 	local response2 = Base.Message.response(1515, err)
@@ -119,9 +117,12 @@ local function testStateUpdate(p, messages)
 	local event2 = Base.Message.event("event2")
 
 	local enc = encodeStateUpdate(p, 111, { response1, response2, event1, event2 })
-	print(enc)
-	local dec = decodeStateUpdate(enc.dataView())
-	print(dec)
+	local stateDiff, changedAtDiff, responses, events = decodeStateUpdate(enc.dataView())
+	print(stateDiff, changedAtDiff, #responses, #events)
+
+	assert(getmetatable(stateDiff) == getmetatable(p))
+	assert(changedAtDiff == 111)
+	assert(#responses == 2 and #events == 2)
 end
 
 function love.load(args)
