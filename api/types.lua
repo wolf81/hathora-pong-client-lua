@@ -5,14 +5,20 @@ local Writer = serde.Writer
 local Reader = serde.Reader
 
 local Base = require(_PATH .. "base")
+local Response = Base.Response
+local Message = Base.Message
 local NO_DIFF = Base.NO_DIFF
+
+function isArray(t)
+	return #t > 0 and next(t, #t) == nil
+end
 
 local function isView(buf)
 	return getmetatable(buf) == serde.DataView
 end
 
-local function push(tbl, val)
-	tbl[#tbl + 1] = val
+local function push(arr, val)
+	arr[#arr + 1] = val
 end
 
 local function flatMap(arr, fn)
@@ -20,11 +26,8 @@ local function flatMap(arr, fn)
 
 	for _, val in ipairs(arr) do
 		local r = fn(val)
-		if type(r) == "table" then
-			for _, ri in ipairs(r) do
-				results[#results + 1] = ri
-			end
-		else
+		if r ~= nil then
+			print("ADD RESULT")
 			results[#results + 1] = r
 		end
 	end
@@ -32,8 +35,22 @@ local function flatMap(arr, fn)
 	return results
 end
 
-local function shift(tbl)
-	return table.remove(tbl, 1)
+local function map(arr, fn)
+	local results = {}
+
+	for _, val in ipairs(arr) do
+		results[#results + 1] = fn(val)
+	end
+
+	return results
+end
+
+local function spread(arr, fn)
+	return fn(unpack(arr))
+end
+
+local function shift(arr)
+	return table.remove(arr, 1)
 end
 
 local function writeUInt8(buf, x)
@@ -380,11 +397,13 @@ local function encodeStateUpdate(x, changedAtDiff, messages)
 	buf.writeUInt8(1)
 	buf.writeUVarint(changedAtDiff)
 	local responses = flatMap(messages, function(msg)
-		return msg.type == "response" and msg or {}
+		return msg.type == "response" and msg or nil
 	end)
 	buf.writeUVarint(#responses)
-	for msgId, response in ipairs(responses) do
-		buf.writeUInt32(tonumber(msgId)) 
+	print("#r", #responses)
+	for _, response in ipairs(responses) do
+		print("encode msgId", response.msgId)
+		buf.writeUInt32(response.msgId) 
 		writeOptional(
 			buf, 
 			response.type == "error" and response.error or nil, 
@@ -392,16 +411,18 @@ local function encodeStateUpdate(x, changedAtDiff, messages)
 		)
 	end
 	local events = flatMap(messages, function(msg)
-		return msg.type == "event" and msg or {}
+		return msg.type == "event" and msg.event or nil
 	end)
 	buf.writeUVarint(#events)
+	print("#e", #events)
 	for _, event in ipairs(events) do
+		print("evt", event)
 		buf.writeString(event)
 	end
 	if x ~= nil then
 		PlayerState.encodeDiff(x, buf)
 	end
-	return buf.toBuffer()
+	return buf -- buf.toBuffer() -- TODO: should be buf.toBuffer()
 end
 
 --[[
@@ -416,8 +437,37 @@ result:
 
 local function decodeStateUpdate(buf)
 	local sb = isView(buf) and Reader(buf) or buf
-	local changedAtDiff = sb.readUVarInt()
-	local responses = sb.readUVarInt()
+	
+	sb.readUVarint()
+
+	local changedAtDiff = sb.readUVarint()
+
+	print("changedAtDiff", changedAtDiff)
+
+	local responseCount = sb.readUVarint()
+	print("decode #responses", responseCount)
+	local responses = {}
+
+	for i = 1, responseCount do
+		local msgId = sb.readUInt32()
+		local maybeError = parseOptional(sb, function()
+			return parseString(sb)
+		end)
+		responses[#responses + 1] = Message.response(msgId, maybeError == nil, Response.ok(), Response.error(maybeError))		
+	end
+
+	for _, resp in ipairs(responses) do
+		print()
+		for k,v in pairs(resp) do
+			print(k, v)
+		end
+	end
+
+	-- local responses = map({ sb.readUVarint() }, function()
+	-- end)
+
+	-- print("R", #responses)
+	-- spread({ sb.readUVarint() })
 end
 
 -- USER ID
@@ -431,10 +481,13 @@ return {
 	Point = Point,
 	Player = Player,
 	PlayerState = PlayerState,
+
 	SetDirectionRequest = SetDirectionRequest,
 	InitializeRequest = InitializeRequest,
-	UserID = UserID,
 
 	encodeStateSnapshot = encodeStateSnapshot,
 	encodeStateUpdate = encodeStateUpdate,
+	decodeStateUpdate = decodeStateUpdate,
+
+	UserID = UserID,
 }

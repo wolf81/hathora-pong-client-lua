@@ -1,7 +1,5 @@
-local Base = {}
-
-Base.COORDINATOR_HOST = "coordinator.hathora.dev"
-Base.NO_DIFF = {}
+local COORDINATOR_HOST = "coordinator.hathora.dev"
+local NO_DIFF = {}
 
 local function OkResponse() 
 	return { type = "ok" } 
@@ -29,7 +27,7 @@ local function ResponseMessage(msgId, response)
 end
 
 local function EventMessage(event)
-	return { type = "event", event = event }
+	return { type = "event", event = event, }
 end
 
 local Message = {
@@ -41,7 +39,17 @@ local Message = {
 	end,
 }
 
-return Base
+return {
+	COORDINATOR_HOST = COORDINATOR_HOST,
+	NO_DIFF = NO_DIFF,
+
+	OkResponse = OkResponse,
+	ErrorResponse = ErrorResponse,
+	Response = Response,
+	ResponseMessage = ResponseMessage,
+	EventMessage = EventMessage,
+	Message = Message,
+}
 
 
 

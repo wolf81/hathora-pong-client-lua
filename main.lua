@@ -7,10 +7,12 @@ local Point = types.Point
 local Player = types.Player
 local PlayerState = types.PlayerState
 local Direction = types.Direction
+local Message = Base
 local SetDirectionRequest = types.SetDirectionRequest
 local InitializeRequest = types.InitializeRequest
 local encodeStateSnapshot = types.encodeStateSnapshot
 local encodeStateUpdate = types.encodeStateUpdate
+local decodeStateUpdate = types.decodeStateUpdate
 
 local EPSILON = 0.01
 
@@ -105,7 +107,21 @@ local function testDirectionRequest(r)
 end
 
 local function testStateUpdate(p, messages)
-	-- body
+	local ok = Base.Response.ok()
+	print("->", ok.type)
+	local err = Base.Response.error("An error occurred")
+	print("->", err.type)
+
+	local response1 = Base.Message.response(1010, ok)
+	local response2 = Base.Message.response(1515, err)
+
+	local event1 = Base.Message.event("event1")
+	local event2 = Base.Message.event("event2")
+
+	local enc = encodeStateUpdate(p, 111, { response1, response2, event1, event2 })
+	print(enc)
+	local dec = decodeStateUpdate(enc.dataView())
+	print(dec)
 end
 
 function love.load(args)
