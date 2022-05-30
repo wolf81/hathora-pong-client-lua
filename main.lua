@@ -17,7 +17,7 @@ local decodeStateUpdate = types.decodeStateUpdate
 -- TODO: we load the client via loadfile, since the path contains a . for 
 -- invisible directory, which doesn't work properly when using require
 local HathoraClient = require "client.hathora.client"
-local client = HathoraClient()
+local client = HathoraClient.HathoraClient()
 
 local EPSILON = 0.01
 
@@ -173,5 +173,8 @@ function love.load(args)
 	print("\n", p.dataView().toHex())
 	--]]
 
-	client.getUserFromToken()
+	local token = client.loginAnonymous()
+	local user = client.getUserFromToken(token)
+	local game = client.create(token, nil)
+	print(game)
 end

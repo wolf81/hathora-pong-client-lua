@@ -4,3 +4,6 @@
 [submodule "client/hathora/lib/jwtdec"]
 	path = client/hathora/lib/jwtdec
 	url = https://github.com/wolf81/jwtdec.git
+[submodule "client/hathora/lib/json"]
+	path = client/hathora/lib/json
+	url = https://github.com/wolf81/json.lua.git
