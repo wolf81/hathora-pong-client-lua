@@ -1,5 +1,7 @@
 -- local luajwt = require "client.hathora.lib.luajwt.luajwt"
 
+local jwtdec = require "client.hathora.lib.jwtdec"
+
 -- local https = require("https")
 --[[
 export const COORDINATOR_HOST = "coordinator.hathora.dev";

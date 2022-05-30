@@ -1,3 +1,6 @@
 [submodule "api/lib/bin-serde"]
 	path = api/lib/bin-serde
 	url = https://github.com/wolf81/bin-serde-lua
+[submodule "client/hathora/lib/jwtdec"]
+	path = client/hathora/lib/jwtdec
+	url = https://github.com/wolf81/jwtdec.git
