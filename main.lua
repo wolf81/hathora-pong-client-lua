@@ -14,6 +14,11 @@ local encodeStateSnapshot = types.encodeStateSnapshot
 local encodeStateUpdate = types.encodeStateUpdate
 local decodeStateUpdate = types.decodeStateUpdate
 
+-- TODO: we load the client via loadfile, since the path contains a . for 
+-- invisible directory, which doesn't work properly when using require
+local HathoraClient = require "client.hathora.client"
+local client = HathoraClient()
+
 local EPSILON = 0.01
 
 local function eq(x, y)
@@ -126,6 +131,7 @@ local function testStateUpdate(p, messages)
 end
 
 function love.load(args)
+	--[[
 	local point = Point(0.345, 0.678)
 	testPoint(point)
 
@@ -165,4 +171,7 @@ function love.load(args)
 	print(table.concat(bytes, ", "))
 
 	print("\n", p.dataView().toHex())
+	--]]
+
+	client.getUserFromToken()
 end
